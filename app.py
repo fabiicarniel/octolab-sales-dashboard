@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 import random
 
 st.set_page_config(
-    page_title="Octolab · Sales Dashboard",
+    page_title="Octotec · Sales Dashboard",
     layout="wide",
     page_icon="🔮",
     initial_sidebar_state="expanded",
@@ -27,7 +27,7 @@ LOGO = """<svg width="180" height="44" viewBox="0 0 180 44" xmlns="http://www.w3
   <line x1="26" y1="15" x2="20" y2="30" stroke="white" stroke-width="1.3" opacity="0.85"/>
   <line x1="14" y1="15" x2="26" y2="15" stroke="white" stroke-width="1.3" opacity="0.85"/>
   <text x="52" y="30" font-family="system-ui,-apple-system,sans-serif" font-weight="800" font-size="22" fill="white">octo</text>
-  <text x="108" y="30" font-family="system-ui,-apple-system,sans-serif" font-weight="800" font-size="22" fill="#7c3aed">lab</text>
+  <text x="108" y="30" font-family="system-ui,-apple-system,sans-serif" font-weight="800" font-size="22" fill="#7c3aed">tec</text>
 </svg>"""
 
 st.markdown("""
@@ -498,7 +498,7 @@ with tab4:
 st.markdown("""
 <div class="footer">
     💡 Este dashboard pode ser conectado ao seu banco de dados, CRM ou ERP &nbsp;·&nbsp;
-    Feito por <a href="https://github.com/fabiicarniel" target="_blank">Octolab</a>
+    Feito por <a href="https://github.com/fabiicarniel" target="_blank">Octotec</a>
     &nbsp;·&nbsp;
     <a href="https://github.com/fabiicarniel/octolab-sales-dashboard" target="_blank">Ver código no GitHub</a>
 </div>
