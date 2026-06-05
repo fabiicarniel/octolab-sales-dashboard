@@ -42,6 +42,10 @@ html, body, [class*="css"], .stApp { font-family: 'Inter', sans-serif !important
 
 .stApp { background: #09090f; }
 
+header[data-testid="stHeader"] { display: none !important; }
+[data-testid="stToolbar"]       { display: none !important; }
+#MainMenu                       { display: none !important; }
+
 [data-testid="stSidebar"] {
     background: #0f0f1a !important;
     border-right: 1px solid rgba(124,58,237,0.15) !important;
