@@ -49,6 +49,27 @@ hr{border-color:rgba(124,58,237,0.15) !important;}
 [data-testid="stTabs"] button{color:#64748b !important;font-weight:500 !important;font-size:13px !important;border-radius:0 !important;}
 [data-testid="stTabs"] button[aria-selected="true"]{color:#f1f5f9 !important;border-bottom:2px solid #7c3aed !important;}
 [data-testid="stTabs"] button:hover{color:#c4b5fd !important;}
+/* HTML Tables */
+.htable-wrap{background:#0d0d1c;border:1px solid rgba(124,58,237,0.15);border-radius:14px;overflow:hidden;}
+.htable{width:100%;border-collapse:collapse;font-size:13px;}
+.htable thead tr{background:rgba(124,58,237,0.08);}
+.htable th{padding:11px 16px;text-align:left;color:#475569;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;border-bottom:1px solid rgba(124,58,237,0.12);white-space:nowrap;}
+.htable td{padding:11px 16px;color:#cbd5e1;border-bottom:1px solid rgba(255,255,255,0.03);white-space:nowrap;}
+.htable tbody tr:last-child td{border-bottom:none;}
+.htable tbody tr:hover td{background:rgba(124,58,237,0.06);transition:background .15s;}
+/* Status badges */
+.s-closed{background:rgba(16,185,129,.12);color:#10b981;border:1px solid rgba(16,185,129,.2);border-radius:20px;padding:2px 10px;font-size:10px;font-weight:700;}
+.s-neg{background:rgba(245,158,11,.12);color:#f59e0b;border:1px solid rgba(245,158,11,.2);border-radius:20px;padding:2px 10px;font-size:10px;font-weight:700;}
+.s-lost{background:rgba(100,116,139,.1);color:#64748b;border:1px solid rgba(100,116,139,.15);border-radius:20px;padding:2px 10px;font-size:10px;font-weight:700;}
+/* Progress bars inline */
+.pb{display:flex;align-items:center;gap:8px;}
+.pb-track{flex:1;background:rgba(255,255,255,0.05);border-radius:99px;height:5px;overflow:hidden;min-width:60px;}
+.pb-pu{height:100%;border-radius:99px;background:linear-gradient(90deg,#7c3aed,#06b6d4);}
+.pb-gr{height:100%;border-radius:99px;background:#10b981;}
+.pb-am{height:100%;border-radius:99px;background:#f59e0b;}
+.pb-rd{height:100%;border-radius:99px;background:#ef4444;}
+.pb-val{font-size:12px;font-weight:700;min-width:38px;}
+.c-green{color:#10b981;}.c-amber{color:#f59e0b;}.c-red{color:#ef4444;}.c-muted{color:#94a3b8;}.c-white{color:#f1f5f9;font-weight:600;}
 /* KPI cards */
 .kpi-card{background:linear-gradient(145deg,#141428,#1a1a2e);border:1px solid rgba(124,58,237,0.2);border-radius:18px;padding:22px 20px 18px;position:relative;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,0.4);height:130px;}
 .kpi-card::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,#7c3aed,#06b6d4);}
@@ -113,6 +134,57 @@ def delta_html(a, b):
     return '<span class="kpi-neu">= sem variação</span>'
 
 PU, CY, BG = "#7c3aed", "#06b6d4", "#0d0d1c"
+
+def render_perf_table(df_s):
+    rows = ""
+    for _, r in df_s.iterrows():
+        wr = r["win_rate"]
+        if wr >= 65: bar_cls, val_cls = "pb-gr", "c-green"
+        elif wr >= 40: bar_cls, val_cls = "pb-am", "c-amber"
+        else: bar_cls, val_cls = "pb-rd", "c-red"
+        rows += f"""<tr>
+          <td><span class="c-white">{r['vendedor']}</span></td>
+          <td><span class="c-white">{brl(r['receita'])}</span></td>
+          <td class="c-muted">{brl(r['ticket'])}</td>
+          <td class="c-muted">{r['fechados']}<span style="color:#334155"> / {r['total']}</span></td>
+          <td>
+            <div class="pb">
+              <div class="pb-track"><div class="{bar_cls}" style="width:{wr}%"></div></div>
+              <span class="pb-val {val_cls}">{wr:.0f}%</span>
+            </div>
+          </td>
+          <td class="c-muted">{r['ciclo']} dias</td>
+        </tr>"""
+    return f"""<div class="htable-wrap"><table class="htable">
+      <thead><tr><th>Vendedor</th><th>Receita</th><th>Ticket Médio</th><th>Deals</th><th>Win Rate</th><th>Ciclo Médio</th></tr></thead>
+      <tbody>{rows}</tbody></table></div>"""
+
+def render_deals_table(df_d, max_val):
+    status_badge = {
+        "Fechado":        '<span class="s-closed">✓ Fechado</span>',
+        "Em negociação":  '<span class="s-neg">◎ Em negociação</span>',
+        "Perdido":        '<span class="s-lost">✕ Perdido</span>',
+    }
+    rows = ""
+    for _, r in df_d.head(60).iterrows():
+        pct = r["valor"] / max_val * 100 if max_val > 0 else 0
+        rows += f"""<tr>
+          <td class="c-muted">{r['data'].strftime('%d/%m/%Y')}</td>
+          <td><span class="c-white">{r['vendedor']}</span></td>
+          <td class="c-muted">{r['produto']}</td>
+          <td class="c-muted">{r['canal']}</td>
+          <td>
+            <div class="pb">
+              <div class="pb-track"><div class="pb-pu" style="width:{pct:.0f}%"></div></div>
+              <span style="font-size:12px;font-weight:700;color:#f1f5f9;min-width:95px">{brl(r['valor'])}</span>
+            </div>
+          </td>
+          <td class="c-muted" style="text-align:center">{r['dias_ciclo']}d</td>
+          <td>{status_badge.get(r['status'], r['status'])}</td>
+        </tr>"""
+    return f"""<div class="htable-wrap"><table class="htable">
+      <thead><tr><th>Data</th><th>Vendedor</th><th>Produto</th><th>Canal</th><th>Valor</th><th>Ciclo</th><th>Status</th></tr></thead>
+      <tbody>{rows}</tbody></table></div>"""
 COLORS = [PU, CY, "#f59e0b", "#10b981", "#f43f5e"]
 
 def plot_layout(title="", height=340):
@@ -306,17 +378,7 @@ with tab2:
     stats = stats.sort_values("receita", ascending=False)
 
     st.markdown('<div class="section-label">Performance por Vendedor</div>', unsafe_allow_html=True)
-    st.dataframe(
-        stats.rename(columns={"vendedor":"Vendedor","total":"Total Ops","fechados":"Fechados",
-                               "receita":"Receita (R$)","ticket":"Ticket Médio (R$)",
-                               "win_rate":"Win Rate (%)","ciclo":"Ciclo Médio (dias)"}),
-        column_config={
-            "Win Rate (%)": st.column_config.ProgressColumn("Win Rate", format="%.1f%%", min_value=0, max_value=100),
-            "Receita (R$)": st.column_config.NumberColumn("Receita", format="R$ %d"),
-            "Ticket Médio (R$)": st.column_config.NumberColumn("Ticket Médio", format="R$ %d"),
-        },
-        use_container_width=True, hide_index=True, height=240,
-    )
+    st.markdown(render_perf_table(stats), unsafe_allow_html=True)
 
     st.markdown("<div style='height:16px'></div>", unsafe_allow_html=True)
 
@@ -430,22 +492,7 @@ with tab4:
     df_tab["data_fmt"] = df_tab["data"].dt.date
 
     st.markdown(f'<div class="section-label">{len(df_tab)} negócios encontrados · {brl(df_tab["valor"].sum())} em receita</div>', unsafe_allow_html=True)
-
-    st.dataframe(
-        df_tab[["data_fmt","vendedor","produto","canal","valor","dias_ciclo","status"]].rename(columns={
-            "data_fmt":"Data","vendedor":"Vendedor","produto":"Produto",
-            "canal":"Canal","valor":"Valor (R$)","dias_ciclo":"Ciclo (dias)","status":"Status"
-        }),
-        column_config={
-            "Valor (R$)": st.column_config.ProgressColumn(
-                "Valor", format="R$ %d",
-                min_value=0, max_value=int(df_at["valor"].max()),
-            ),
-            "Data": st.column_config.DateColumn("Data", format="DD/MM/YYYY"),
-            "Ciclo (dias)": st.column_config.NumberColumn("Ciclo", format="%d dias"),
-        },
-        use_container_width=True, hide_index=True, height=420,
-    )
+    st.markdown(render_deals_table(df_tab, int(df_at["valor"].max())), unsafe_allow_html=True)
 
 # ── Footer ────────────────────────────────────────────────────────────────────
 st.markdown("""
